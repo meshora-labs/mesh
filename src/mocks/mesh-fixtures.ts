@@ -5,6 +5,8 @@ import type {
 	Run,
 	Workspace,
 } from "@/domain/types";
+import type { ModelRegistryRecord } from "@/domain/model-registry";
+import type { DiscoveredModelSource } from "@/platform/models";
 
 export const mockWorkspace: Workspace = {
 	id: "workspace:mesh-local",
@@ -137,5 +139,72 @@ export const mockModels: ModelProfile[] = [
 		name: "Worker Small",
 		capabilities: ["summaries", "classification"],
 		status: "limited",
+	},
+];
+
+export const mockModelRegistry: ModelRegistryRecord[] = [
+	{
+		id: "registry:openai-primary",
+		providerKind: "openai",
+		integrationMethod: "built-in",
+		label: "OpenAI primary",
+		modelId: "gpt-5.5",
+		baseUrl: "https://api.openai.com/v1",
+		auth: { type: "env", envVar: "OPENAI_API_KEY" },
+		status: "ready",
+		createdAtIso: "2026-05-02T08:15:00.000Z",
+		updatedAtIso: "2026-05-03T09:40:00.000Z",
+		source: "mesh-fixture",
+	},
+	{
+		id: "registry:ollama-local",
+		providerKind: "ollama",
+		integrationMethod: "auto-discovery",
+		label: "Ollama local",
+		modelId: "llama3.2:latest",
+		baseUrl: "http://localhost:11434",
+		auth: { type: "none" },
+		status: "ready",
+		createdAtIso: "2026-05-01T13:05:00.000Z",
+		updatedAtIso: "2026-05-03T08:55:00.000Z",
+		source: "mesh-fixture",
+	},
+	{
+		id: "registry:worker-cli",
+		providerKind: "manual-cli",
+		integrationMethod: "manual",
+		label: "Worker Small",
+		modelId: "local-cli",
+		command: "mesh-worker",
+		args: "--profile small",
+		auth: { type: "none" },
+		status: "needs-attention",
+		createdAtIso: "2026-04-30T18:20:00.000Z",
+		updatedAtIso: "2026-05-02T21:10:00.000Z",
+		source: "mesh-fixture",
+	},
+];
+
+export const mockModelDiscoverySources: DiscoveredModelSource[] = [
+	{
+		id: "ollama",
+		kind: "ollama",
+		label: "Ollama",
+		baseUrl: "http://localhost:11434",
+		online: true,
+		models: [
+			{ id: "llama3.2:latest", label: "llama3.2:latest" },
+			{ id: "qwen2.5-coder:7b", label: "qwen2.5-coder:7b" },
+		],
+		status: "healthy",
+	},
+	{
+		id: "lm-studio",
+		kind: "lm-studio",
+		label: "LM Studio",
+		baseUrl: "http://localhost:1234/v1",
+		online: true,
+		models: [{ id: "mistral-nemo-instruct", label: "mistral-nemo-instruct" }],
+		status: "healthy",
 	},
 ];

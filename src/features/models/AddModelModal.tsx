@@ -89,8 +89,13 @@ export function AddModelModal({
 	const [catalogStatus, setCatalogStatus] = useState("Catalog not loaded.");
 	const [catalogLoading, setCatalogLoading] = useState(false);
 	const selectedDefinition = getModelProviderDefinition(input.providerKind);
+	const isDiscoveryProvider = selectedDefinition.group === "discovery";
+	const shouldShowCatalog = selectedDefinition.supportsCatalog;
+	const selectedDiscoverySources = discoverySources.filter(
+		(source) => source.kind === input.providerKind,
+	);
 	const visibleCatalog = catalog.slice(0, 24);
-	const discoveredCount = discoverySources.reduce(
+	const selectedDiscoveredCount = selectedDiscoverySources.reduce(
 		(count, source) => count + source.models.length,
 		0,
 	);
@@ -260,7 +265,13 @@ export function AddModelModal({
 						))}
 					</div>
 
-					<div className="model-add-config">
+					<div
+						className={
+							shouldShowCatalog
+								? "model-add-config"
+								: "model-add-config model-add-config--single"
+						}
+					>
 						<div className="model-add-main">
 							<section className="model-config-section">
 								<header className="model-section-header">
@@ -395,104 +406,118 @@ export function AddModelModal({
 								) : null}
 							</section>
 
-							<section className="model-config-section">
-								<header className="model-section-header">
-									<div>
-										<h3>Discovery</h3>
-										<p>{discoveryStatus}</p>
-									</div>
-									<Button
-										disabled={discovering}
-										icon={<RefreshCw size={14} />}
-										onClick={() => void onDiscover()}
-										size="sm"
-									>
-										Scan
-									</Button>
-								</header>
-								<div className="model-discovery-list">
-									{discoverySources.length === 0 ? (
-										<p className="model-muted-line">No scan results yet.</p>
-									) : null}
-									{discoverySources.map((source) => (
-										<div className="model-discovery-source" key={source.id}>
-											<div className="model-discovery-source__header">
-												<div>
-													<strong>{source.label}</strong>
-													<span>{source.baseUrl ?? source.message ?? "No endpoint"}</span>
+							{isDiscoveryProvider ? (
+								<section className="model-config-section">
+									<header className="model-section-header">
+										<div>
+											<h3>{selectedDefinition.label} discovery</h3>
+											<p>{discoveryStatus}</p>
+										</div>
+										<Button
+											disabled={discovering}
+											icon={<RefreshCw size={14} />}
+											onClick={() => void onDiscover()}
+											size="sm"
+										>
+											Scan
+										</Button>
+									</header>
+									<div className="model-discovery-list">
+										{selectedDiscoverySources.length === 0 ? (
+											<p className="model-muted-line">
+												No {selectedDefinition.label} results yet.
+											</p>
+										) : null}
+										{selectedDiscoverySources.map((source) => (
+											<div className="model-discovery-source" key={source.id}>
+												<div className="model-discovery-source__header">
+													<div>
+														<strong>{source.label}</strong>
+														<span>
+															{source.baseUrl ?? source.message ?? "No endpoint"}
+														</span>
+													</div>
+													<Badge tone={source.online ? "good" : "neutral"}>
+														{source.online ? "online" : "off"}
+													</Badge>
 												</div>
-												<Badge tone={source.online ? "good" : "neutral"}>
-													{source.online ? "online" : "off"}
-												</Badge>
-											</div>
-											{source.kind === "docker" ? (
-												<div className="model-docker-row">
-													<span>{source.image ?? "container"}</span>
-													<Button
-														icon={<Download size={13} />}
-														onClick={() => useDockerSource(source)}
-														size="sm"
-													>
-														Use
-													</Button>
-												</div>
-											) : (
-												source.models.slice(0, 8).map((model) => (
-													<div className="model-catalog-row" key={model.id}>
-														<span>{model.label}</span>
+												{source.kind === "docker" ? (
+													<div className="model-docker-row">
+														<span>{source.image ?? "container"}</span>
 														<Button
-															onClick={() => useDiscoveredModel(source, model)}
+															icon={<Download size={13} />}
+															onClick={() => useDockerSource(source)}
 															size="sm"
 														>
 															Use
 														</Button>
 													</div>
-												))
-											)}
-										</div>
-									))}
-								</div>
-								<p className="model-muted-line">
-									{discoveredCount} discovered model
-									{discoveredCount === 1 ? "" : "s"}.
-								</p>
-							</section>
+												) : (
+													source.models.slice(0, 8).map((model) => (
+														<div className="model-catalog-row" key={model.id}>
+															<span>{model.label}</span>
+															<Button
+																onClick={() => useDiscoveredModel(source, model)}
+																size="sm"
+															>
+																Use
+															</Button>
+														</div>
+													))
+												)}
+											</div>
+										))}
+									</div>
+									<p className="model-muted-line">
+										{selectedDiscoveredCount} discovered model
+										{selectedDiscoveredCount === 1 ? "" : "s"} for{" "}
+										{selectedDefinition.label}.
+									</p>
+								</section>
+							) : null}
 						</div>
 
-						<aside className="model-catalog-panel">
-							<header className="model-section-header">
-								<div>
-									<h3>Catalog</h3>
-									<p>{catalogStatus}</p>
-								</div>
-								<Button
-									disabled={!selectedDefinition.supportsCatalog || catalogLoading}
-									icon={<Download size={14} />}
-									onClick={() => void loadCatalog()}
-									size="sm"
-								>
-									Load
-								</Button>
-							</header>
-							<div className="model-catalog-list">
-								{visibleCatalog.map((entry) => (
-									<div className="model-catalog-row" key={entry.id}>
-										<span>
-											<strong>{entry.label}</strong>
-											<small>{entry.id}</small>
-										</span>
-										<Button onClick={() => useCatalogEntry(entry)} size="sm">
-											Use
-										</Button>
+						{shouldShowCatalog ? (
+							<aside className="model-catalog-panel">
+								<header className="model-section-header">
+									<div>
+										<h3>{selectedDefinition.label} catalog</h3>
+										<p>{catalogStatus}</p>
 									</div>
-								))}
-								{catalog.length > visibleCatalog.length ? (
-									<p className="model-muted-line">
-										Showing first {visibleCatalog.length} results.
-									</p>
-								) : null}
-							</div>
-						</aside>
+									<Button
+										disabled={catalogLoading}
+										icon={<Download size={14} />}
+										onClick={() => void loadCatalog()}
+										size="sm"
+									>
+										Load
+									</Button>
+								</header>
+								<div className="model-catalog-list">
+									{visibleCatalog.length === 0 ? (
+										<p className="model-muted-line">
+											Load the catalog to choose a model ID.
+										</p>
+									) : null}
+									{visibleCatalog.map((entry) => (
+										<div className="model-catalog-row" key={entry.id}>
+											<span>
+												<strong>{entry.label}</strong>
+												<small>{entry.id}</small>
+											</span>
+											<Button onClick={() => useCatalogEntry(entry)} size="sm">
+												Use
+											</Button>
+										</div>
+									))}
+									{catalog.length > visibleCatalog.length ? (
+										<p className="model-muted-line">
+											Showing first {visibleCatalog.length} results.
+										</p>
+									) : null}
+								</div>
+							</aside>
+						) : null}
 					</div>
 				</div>
 

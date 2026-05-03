@@ -24,6 +24,10 @@ import { ModelsPage } from "@/features/models/ModelsPage";
 import { PlaceholderPage } from "@/features/placeholders/PlaceholderPage";
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
 import { RunsPage } from "@/features/runs/RunsPage";
+import {
+	mockModelDiscoverySources,
+	mockModelRegistry,
+} from "@/mocks/mesh-fixtures";
 
 const interactiveTopbarSelector = "button, input, textarea, select, a, label, kbd";
 
@@ -227,7 +231,12 @@ export function AppShell({
 						{activeRoute === "runs" ? (
 							<RunsPage projects={data.projects} runs={data.runs} />
 						) : null}
-						{activeRoute === "models" ? <ModelsPage /> : null}
+						{activeRoute === "models" ? (
+							<ModelsPage
+								initialDiscoverySources={mockModelDiscoverySources}
+								initialModels={mockModelRegistry}
+							/>
+						) : null}
 						{!["command-center", "projects", "runs", "models"].includes(
 							activeRoute,
 						) ? (

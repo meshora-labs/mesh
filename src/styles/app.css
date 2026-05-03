@@ -1191,6 +1191,10 @@ kbd {
 	min-width: 0;
 }
 
+.model-add-config--single {
+	grid-template-columns: minmax(0, 1fr);
+}
+
 .model-add-main,
 .model-config-section,
 .model-discovery-list,

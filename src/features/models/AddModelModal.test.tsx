@@ -13,7 +13,12 @@ describe("AddModelModal", () => {
 						label: "Ollama",
 						baseUrl: "http://localhost:11434",
 						online: true,
-						models: [{ id: "llama3.2", label: "llama3.2" }],
+						models: [
+							{
+								id: "only-discovery-model",
+								label: "Only discovery model",
+							},
+						],
 					},
 				]}
 				discoveryStatus="1 source, 1 model."
@@ -41,6 +46,11 @@ describe("AddModelModal", () => {
 		expect(html).toContain("Gemini / Google");
 		expect(html).toContain("HTTP config");
 		expect(html).toContain("Local CLI");
+		expect(html).toContain("Catalog not loaded.");
+		expect(html).not.toContain("1 source, 1 model.");
+		expect(html).not.toContain("http://localhost:11434");
+		expect(html).not.toContain("only-discovery-model");
+		expect(html).not.toContain("Only discovery model");
 		expect(html).toContain("Save model");
 	});
 });
