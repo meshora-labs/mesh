@@ -24,7 +24,9 @@ import { ModelsPage } from "@/features/models/ModelsPage";
 import { PlaceholderPage } from "@/features/placeholders/PlaceholderPage";
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
 import { RunsPage } from "@/features/runs/RunsPage";
+import { WorkbenchPage } from "@/features/workbench/WorkbenchPage";
 import {
+	mockAgents,
 	mockModelDiscoverySources,
 	mockModelRegistry,
 } from "@/mocks/mesh-fixtures";
@@ -231,15 +233,26 @@ export function AppShell({
 						{activeRoute === "runs" ? (
 							<RunsPage projects={data.projects} runs={data.runs} />
 						) : null}
+						{activeRoute === "workbench" ? (
+							<WorkbenchPage
+								agents={mockAgents}
+								models={mockModelRegistry}
+								projects={data.projects}
+							/>
+						) : null}
 						{activeRoute === "models" ? (
 							<ModelsPage
 								initialDiscoverySources={mockModelDiscoverySources}
 								initialModels={mockModelRegistry}
 							/>
 						) : null}
-						{!["command-center", "projects", "runs", "models"].includes(
-							activeRoute,
-						) ? (
+						{![
+							"command-center",
+							"projects",
+							"runs",
+							"workbench",
+							"models",
+						].includes(activeRoute) ? (
 							<PlaceholderPage route={route} />
 						) : null}
 					</section>

@@ -3,6 +3,7 @@ import {
 	Box,
 	FolderKanban,
 	Home,
+	MessageCircle,
 	PlayCircle,
 	Settings,
 	SlidersHorizontal,
@@ -14,6 +15,7 @@ export type AppRoute =
 	| "command-center"
 	| "projects"
 	| "runs"
+	| "workbench"
 	| "agents"
 	| "models"
 	| "extensions"
@@ -47,6 +49,13 @@ export const navigationItems: NavigationItem[] = [
 		label: "Runs",
 		description: "Execution history",
 		icon: PlayCircle,
+		enabled: true,
+	},
+	{
+		id: "workbench",
+		label: "Workbench",
+		description: "Agent console",
+		icon: MessageCircle,
 		enabled: true,
 	},
 	{

@@ -17,6 +17,7 @@ describe("navigation helpers", () => {
 			"command-center",
 			"projects",
 			"runs",
+			"workbench",
 			"models",
 		]);
 	});
