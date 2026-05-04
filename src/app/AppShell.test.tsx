@@ -20,7 +20,7 @@ describe("AppShell", () => {
 		expect(html).toContain("lucide-folder-kanban");
 		expect(html).toContain("lucide-circle-play");
 		expect(html).toContain("lucide-sliders-horizontal");
-		expect(html).toContain("Hide context panel");
+		expect(html).toContain("Show context panel");
 		expect(html).toContain("Search projects, runs, agents");
 	});
 });

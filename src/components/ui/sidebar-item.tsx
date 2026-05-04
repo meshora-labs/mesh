@@ -13,7 +13,7 @@ export function SidebarItem({
 	active = false,
 	disabled = false,
 	onSelect,
-}: SidebarItemProps) {
+}: Readonly<SidebarItemProps>) {
 	return (
 		<button
 			aria-current={active ? "page" : undefined}

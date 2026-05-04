@@ -41,14 +41,38 @@ interface AppShellProps {
 
 const CONTEXT_PANEL_STORAGE_KEY = "mesh-context-panel-open";
 
+function pureHandleTopbarMouseDown(event: MouseEvent<HTMLElement>) {
+	if (event.button !== 0) {
+		return;
+	}
+
+	const target = event.target;
+	if (
+		target instanceof Element &&
+		target.closest(interactiveTopbarSelector)
+	) {
+		return;
+	}
+
+	if (!("__TAURI_INTERNALS__" in globalThis)) {
+		return;
+	}
+
+	void import("@tauri-apps/api/window")
+		.then(({ getCurrentWindow }) => getCurrentWindow().startDragging())
+		.catch(() => {
+			// Browser preview and some embedded contexts do not expose window drag.
+		});
+}
+
 export function AppShell({
 	activeRoute,
 	onRouteChange,
 	repositories,
-}: AppShellProps) {
+}: Readonly<AppShellProps>) {
 	const data = useWorkspaceData(repositories);
 	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-	const [isContextPanelOpen, setIsContextPanelOpen] = useState(true);
+	const [isContextPanelOpen, setIsContextPanelOpen] = useState(false);
 
 	useEffect(() => {
 		const storedValue = globalThis.localStorage.getItem(
@@ -82,45 +106,21 @@ export function AppShell({
 		[activeRuns.length, recentRun, selectedProject],
 	);
 
-	function handleTopbarMouseDown(event: MouseEvent<HTMLElement>) {
-		if (event.button !== 0) {
-			return;
-		}
-
-		const target = event.target;
-		if (
-			target instanceof Element &&
-			target.closest(interactiveTopbarSelector)
-		) {
-			return;
-		}
-
-		if (!("__TAURI_INTERNALS__" in globalThis)) {
-			return;
-		}
-
-		void import("@tauri-apps/api/window")
-			.then(({ getCurrentWindow }) => getCurrentWindow().startDragging())
-			.catch(() => {
-				// Browser preview and some embedded contexts do not expose window drag.
-			});
-	}
-
 	return (
 		<div className="app-shell">
 			<header
 				className="topbar"
 				data-tauri-drag-region
-				onMouseDown={handleTopbarMouseDown}
 			>
 				<div
 					className="window-drag-space"
 					aria-hidden="true"
 					data-tauri-drag-region
+					onMouseDown={pureHandleTopbarMouseDown}
 				/>
-				<label className="global-search">
-					<Search aria-hidden="true" size={16} />
-					<Input placeholder="Search projects, runs, agents" />
+			<label className="global-search" htmlFor="global-search-input">
+				<Search aria-hidden="true" size={16} />
+				<Input id="global-search-input" placeholder="Search projects, runs, agents" />
 					<kbd>⌘K</kbd>
 				</label>
 				<div className="topbar__actions">
@@ -246,15 +246,15 @@ export function AppShell({
 								initialModels={mockModelRegistry}
 							/>
 						) : null}
-						{![
+						{[
 							"command-center",
 							"projects",
 							"runs",
 							"workbench",
 							"models",
-						].includes(activeRoute) ? (
+						].includes(activeRoute) ? null : (
 							<PlaceholderPage route={route} />
-						) : null}
+						)}
 					</section>
 
 					{isContextPanelOpen ? (
