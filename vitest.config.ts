@@ -9,7 +9,7 @@ export default defineConfig({
 	},
 	test: {
 		environment: "node",
-		exclude: ["old/**", "node_modules/**", "dist/**", "src-tauri/**"],
+		exclude: ["node_modules/**", "dist/**", "src-tauri/**"],
 		globals: true,
 	},
 });
