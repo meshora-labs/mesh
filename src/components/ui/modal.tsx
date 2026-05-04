@@ -38,17 +38,16 @@ export function Modal({ open, title, description, children, onOpenChange }: Moda
     return null;
   }
 
-  return (
-    <button
-      className="modal-backdrop"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onOpenChange(false);
-        }
-      }}
-      tabIndex={-1}
-      type="button"
-    >
+	return (
+		<div
+			className="modal-backdrop"
+			onMouseDown={(event) => {
+				if (event.target === event.currentTarget) {
+					onOpenChange(false);
+				}
+			}}
+			tabIndex={-1}
+		>
       <div
         aria-describedby={description ? descriptionId : undefined}
         aria-labelledby={titleId}
@@ -69,6 +68,6 @@ export function Modal({ open, title, description, children, onOpenChange }: Moda
         </header>
         <div className="modal__body">{children}</div>
       </div>
-    </button>
-  );
+		</div>
+	);
 }

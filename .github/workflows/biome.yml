@@ -1,4 +1,4 @@
-name: Biome
+name: Quality
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  biome:
+  quality:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,3 +31,16 @@ jobs:
 
       - name: Run Biome
         run: pnpm run biome:check
+
+      - name: Run TypeScript
+        run: pnpm run typecheck
+
+      - name: Run Vitest
+        run: pnpm test
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run Tauri tests
+        working-directory: src-tauri
+        run: cargo test

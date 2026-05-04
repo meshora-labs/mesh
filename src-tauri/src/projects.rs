@@ -20,7 +20,12 @@ pub fn clone_repository(
     repo_url: String,
     destination_path: String,
 ) -> Result<CloneRepositoryResult, String> {
+    let repo_url = repo_url.trim();
     let destination = PathBuf::from(destination_path.trim());
+
+    if repo_url.is_empty() {
+        return Err("Repository URL is required".to_string());
+    }
 
     if destination.as_os_str().is_empty() {
         return Err("Destination path is required".to_string());
@@ -39,7 +44,7 @@ pub fn clone_repository(
 
     let output = Command::new("git")
         .arg("clone")
-        .arg(repo_url.trim())
+        .arg(repo_url)
         .arg(&destination)
         .output()
         .map_err(|error| format!("Unable to run git clone command: {error}"))?;
@@ -57,4 +62,26 @@ pub fn clone_repository(
     Ok(CloneRepositoryResult {
         local_path: canonical_destination,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn clone_repository_rejects_empty_repo_url() {
+        let result = clone_repository("   ".to_string(), "/tmp/mesh-test-repo".to_string());
+
+        assert_eq!(result.unwrap_err(), "Repository URL is required");
+    }
+
+    #[test]
+    fn clone_repository_rejects_empty_destination_path() {
+        let result = clone_repository(
+            "https://github.com/owner/repo.git".to_string(),
+            "   ".to_string(),
+        );
+
+        assert_eq!(result.unwrap_err(), "Destination path is required");
+    }
 }

@@ -550,11 +550,12 @@ fn normalize_catalog_payload(provider_kind: &str, payload: &Value) -> Vec<ModelC
 }
 
 fn read_catalog_entry(item: &Value) -> Option<ModelCatalogEntry> {
-    let id = string_field(item, "id")
-        .or_else(|| string_field(item, "name").map(|name| name.trim_start_matches("models/").to_string()))?;
-    let label = string_field(item, "name")
-        .or_else(|| string_field(item, "displayName"))
+    let id = string_field(item, "id").or_else(|| {
+        string_field(item, "name").map(|name| name.trim_start_matches("models/").to_string())
+    })?;
+    let label = string_field(item, "displayName")
         .or_else(|| string_field(item, "display_name"))
+        .or_else(|| string_field(item, "name"))
         .unwrap_or_else(|| id.clone());
 
     Some(ModelCatalogEntry {
@@ -585,4 +586,129 @@ fn normalized_optional(value: Option<String>) -> Option<String> {
     value
         .map(|entry| entry.trim().to_string())
         .filter(|entry| !entry.is_empty())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn detects_docker_base_url_from_known_container_ports() {
+        assert_eq!(
+            detect_docker_base_url("0.0.0.0:11434->11434/tcp"),
+            Some("http://localhost:11434".to_string())
+        );
+        assert_eq!(
+            detect_docker_base_url("127.0.0.1:49152->8000/tcp"),
+            Some("http://localhost:49152/v1".to_string())
+        );
+        assert_eq!(detect_docker_base_url("0.0.0.0:9000->9000/tcp"), None);
+    }
+
+    #[test]
+    fn builds_catalog_endpoints_for_provider_shapes() {
+        let openai = ModelCatalogRequest {
+            provider_kind: "openai".to_string(),
+            base_url: Some("https://api.openai.com/v1/".to_string()),
+            api_key: None,
+            api_key_env: None,
+        };
+        let gemini = ModelCatalogRequest {
+            provider_kind: "gemini".to_string(),
+            base_url: Some("https://generativelanguage.googleapis.com/v1beta/".to_string()),
+            api_key: None,
+            api_key_env: None,
+        };
+        let hugging_face = ModelCatalogRequest {
+            provider_kind: "hugging-face".to_string(),
+            base_url: Some("https://ignored.example".to_string()),
+            api_key: None,
+            api_key_env: None,
+        };
+
+        assert_eq!(
+            catalog_endpoint(&openai, None),
+            "https://api.openai.com/v1/models"
+        );
+        assert_eq!(
+            catalog_endpoint(&gemini, Some("gemini-key")),
+            "https://generativelanguage.googleapis.com/v1beta/models?key=gemini-key"
+        );
+        assert_eq!(
+            catalog_endpoint(&hugging_face, None),
+            "https://huggingface.co/api/models?inference_provider=all&pipeline_tag=text-generation&limit=100"
+        );
+    }
+
+    #[test]
+    fn resolves_direct_api_key_before_env_key() {
+        let request = ModelCatalogRequest {
+            provider_kind: "openai".to_string(),
+            base_url: None,
+            api_key: Some("  direct-key  ".to_string()),
+            api_key_env: Some("MESH_TEST_UNUSED".to_string()),
+        };
+
+        assert_eq!(resolve_api_key(&request), Some("direct-key".to_string()));
+    }
+
+    #[test]
+    fn normalizes_openai_compatible_catalog_payloads() {
+        let payload = json!({
+            "data": [
+                {
+                    "id": "gpt-5.2",
+                    "display_name": "GPT-5.2",
+                    "owned_by": "openai",
+                    "context_length": 200000
+                },
+                {
+                    "object": "invalid"
+                }
+            ]
+        });
+
+        let entries = normalize_catalog_payload("openai", &payload);
+
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].id, "gpt-5.2");
+        assert_eq!(entries[0].label, "GPT-5.2");
+        assert_eq!(entries[0].owner, Some("openai".to_string()));
+        assert_eq!(entries[0].context_window, Some(200000));
+    }
+
+    #[test]
+    fn normalizes_gemini_and_hugging_face_catalog_payloads() {
+        let gemini_payload = json!({
+            "models": [
+                {
+                    "name": "models/gemini-2.0-flash",
+                    "displayName": "Gemini 2.0 Flash",
+                    "inputTokenLimit": 1048576
+                }
+            ]
+        });
+        let hugging_face_payload = json!([
+            {
+                "id": "meta-llama/Llama-3.3-70B-Instruct",
+                "author": "meta-llama"
+            }
+        ]);
+
+        let gemini_entries = normalize_catalog_payload("gemini", &gemini_payload);
+        let hugging_face_entries = normalize_catalog_payload("hugging-face", &hugging_face_payload);
+
+        assert_eq!(gemini_entries[0].id, "gemini-2.0-flash");
+        assert_eq!(gemini_entries[0].label, "Gemini 2.0 Flash");
+        assert_eq!(gemini_entries[0].context_window, Some(1048576));
+        assert_eq!(
+            hugging_face_entries[0].id,
+            "meta-llama/Llama-3.3-70B-Instruct"
+        );
+        assert_eq!(
+            hugging_face_entries[0].owner,
+            Some("meta-llama".to_string())
+        );
+    }
 }

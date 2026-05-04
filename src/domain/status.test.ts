@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  getProjectStatusLabel,
-  getProjectStatusTone,
-  getRunStatusLabel,
+	getAgentStatusLabel,
+	getModelStatusLabel,
+	getProjectStatusLabel,
+	getProjectStatusTone,
+	getRunStatusLabel,
   getRunStatusTone,
   getWorkspaceStatusLabel,
   getWorkspaceStatusTone,
@@ -21,10 +23,19 @@ describe("status normalization", () => {
     expect(getProjectStatusTone("idle")).toBe("neutral");
   });
 
-  it("maps run statuses to stable labels and tones", () => {
-    expect(getRunStatusLabel("queued")).toBe("Queued");
-    expect(getRunStatusTone("running")).toBe("live");
-    expect(getRunStatusTone("completed")).toBe("good");
-    expect(getRunStatusTone("failed")).toBe("danger");
-  });
+	it("maps run statuses to stable labels and tones", () => {
+		expect(getRunStatusLabel("queued")).toBe("Queued");
+		expect(getRunStatusTone("running")).toBe("live");
+		expect(getRunStatusTone("completed")).toBe("good");
+		expect(getRunStatusTone("failed")).toBe("danger");
+	});
+
+	it("maps agent and model statuses to stable labels", () => {
+		expect(getAgentStatusLabel("available")).toBe("Available");
+		expect(getAgentStatusLabel("busy")).toBe("Busy");
+		expect(getAgentStatusLabel("disabled")).toBe("Disabled");
+		expect(getModelStatusLabel("online")).toBe("Online");
+		expect(getModelStatusLabel("offline")).toBe("Offline");
+		expect(getModelStatusLabel("limited")).toBe("Limited");
+	});
 });
