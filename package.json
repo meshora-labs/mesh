@@ -8,25 +8,29 @@
 		"dev": "vite --host 0.0.0.0 --port 1420",
 		"build": "tsc --noEmit && vite build",
 		"test": "vitest run --config vitest.config.ts",
+		"format": "biome format",
+		"lint": "biome check",
 		"preview": "vite preview",
 		"tauri": "tauri",
 		"tauri:dev": "tauri dev",
 		"tauri:build": "tauri build --debug --no-bundle"
 	},
 	"dependencies": {
-		"@tauri-apps/api": "^2.10.1",
-		"lucide-react": "^1.8.0",
+		"@tauri-apps/api": "^2.11.0",
+		"lucide-react": "^1.14.0",
 		"react": "^19.2.5",
 		"react-dom": "^19.2.5"
 	},
 	"devDependencies": {
-		"@tauri-apps/cli": "^2.10.1",
-		"@types/node": "^24.10.1",
-		"@types/react": "^19.2.2",
-		"@types/react-dom": "^19.2.2",
-		"@vitejs/plugin-react": "^5.1.0",
-		"typescript": "^5.9.3",
-		"vite": "^8.0.9",
-		"vitest": "^3.2.4"
+		"@tauri-apps/cli": "^2.11.0",
+		"@tsconfig/node24": "^24.0.4",
+		"@types/node": "^25.6.0",
+		"@types/react": "^19.2.14",
+		"@types/react-dom": "^19.2.3",
+		"@vitejs/plugin-react": "^6.0.1",
+		"biome": "^0.3.3",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.10",
+		"vitest": "^4.1.5"
 	}
 }
