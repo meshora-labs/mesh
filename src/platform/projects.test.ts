@@ -1,29 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cloneRepository, pickDirectory } from "@/platform/projects";
 
-interface WindowWithPrompt extends Window {
-  prompt?: (message?: string) => string | null;
-}
-
 describe("platform project utilities", () => {
-  let promptSpy: ReturnType<typeof vi.spyOn> | null = null;
+  let promptMock: ReturnType<typeof vi.fn<
+    (message?: string, _default?: string) => string | null
+  >>;
 
   beforeEach(() => {
-    vi.stubGlobal("window", { prompt: vi.fn(() => null) } as WindowWithPrompt);
-    promptSpy = vi
-      .spyOn(globalThis.window as WindowWithPrompt, "prompt")
-      .mockImplementation(() => null);
+    promptMock = vi.fn(() => null);
+    vi.stubGlobal(
+      "window",
+      { prompt: promptMock } satisfies Pick<Window, "prompt">,
+    );
   });
 
   afterEach(() => {
-    if (promptSpy) {
-      promptSpy.mockRestore();
-    }
+    promptMock.mockReset();
     vi.unstubAllGlobals();
   });
 
   it("returns a selected directory from the browser fallback", async () => {
-    promptSpy?.mockImplementation(() => "/Users/test/project");
+    promptMock.mockImplementation(() => "/Users/test/project");
 
     const directory = await pickDirectory();
 
@@ -31,7 +28,7 @@ describe("platform project utilities", () => {
   });
 
   it("returns null when directory selection is cancelled", async () => {
-    promptSpy?.mockImplementation(() => null);
+    promptMock.mockImplementation(() => null);
 
     const directory = await pickDirectory();
 
