@@ -6,11 +6,11 @@ import "@/styles/app.css";
 const root = document.getElementById("root");
 
 if (!root) {
-	throw new Error("Mesh root element was not found.");
+  throw new Error("Mesh root element was not found.");
 }
 
 createRoot(root).render(
-	<StrictMode>
-		<App />
-	</StrictMode>,
+  <StrictMode>
+    <App />
+  </StrictMode>,
 );

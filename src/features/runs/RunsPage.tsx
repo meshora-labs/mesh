@@ -8,69 +8,73 @@ import type { Project, Run, RunStatus } from "@/domain/types";
 import { formatCurrency, formatDuration, formatRelativeTime } from "@/features/shared/format";
 
 interface RunsPageProps {
-	projects: Project[];
-	runs: Run[];
+  projects: Project[];
+  runs: Run[];
 }
 
 const statusIcons: Record<RunStatus, typeof Clock3> = {
-	queued: Clock3,
-	running: Loader2,
-	completed: CheckCircle2,
-	failed: AlertTriangle,
+  queued: Clock3,
+  running: Loader2,
+  completed: CheckCircle2,
+  failed: AlertTriangle,
 };
 
 export function RunsPage({ projects, runs }: RunsPageProps) {
-	if (runs.length === 0) {
-		return (
-			<EmptyState
-				description="Runs will appear here after an agent or workflow starts work."
-				icon={<Clock3 size={22} />}
-				title="No runs yet"
-			/>
-		);
-	}
+  if (runs.length === 0) {
+    return (
+      <EmptyState
+        description="Runs will appear here after an agent or workflow starts work."
+        icon={<Clock3 size={22} />}
+        title="No runs yet"
+      />
+    );
+  }
 
-	return (
-		<Panel description="Mocked execution history across the local workspace" title="Run ledger">
-			<div className="run-table" role="table">
-				<div className="run-table__header" role="row">
-					<span>Run</span>
-					<span>Project</span>
-					<span>Agent</span>
-					<span>Duration</span>
-					<span>Cost</span>
-					<span>Status</span>
-				</div>
-				{runs.map((run) => {
-					const project = projects.find((entry) => entry.id === run.projectId);
-					const Icon = statusIcons[run.status];
+  return (
+    <Panel description="Mocked execution history across the local workspace" title="Run ledger">
+      <table className="run-table">
+        <thead>
+          <tr className="run-table__header">
+            <th>Run</th>
+            <th>Project</th>
+            <th>Agent</th>
+            <th>Duration</th>
+            <th>Cost</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {runs.map((run) => {
+            const project = projects.find((entry) => entry.id === run.projectId);
+            const Icon = statusIcons[run.status];
 
-					return (
-						<div className="run-table__row" key={run.id} role="row">
-							<span className="run-title">
-								<Icon size={16} />
-								<span>
-									<strong>{run.title}</strong>
-									<small>{formatRelativeTime(run.startedAt)}</small>
-								</span>
-							</span>
-							<span>{project?.name ?? "Unknown"}</span>
-							<span>
-								{run.agent}
-								<small>{run.model}</small>
-							</span>
-							<span>{formatDuration(run.durationMs)}</span>
-							<span>{formatCurrency(run.costEstimate)}</span>
-							<span>
-								<Badge tone={getRunStatusTone(run.status)}>
-									<StatusDot tone={getRunStatusTone(run.status)} />
-									{getRunStatusLabel(run.status)}
-								</Badge>
-							</span>
-						</div>
-					);
-				})}
-			</div>
-		</Panel>
-	);
+            return (
+              <tr className="run-table__row" key={run.id}>
+                <td className="run-title">
+                  <Icon size={16} />
+                  <span>
+                    <strong>{run.title}</strong>
+                    <small>{formatRelativeTime(run.startedAt)}</small>
+                  </span>
+                </td>
+                <td>{project?.name ?? "Unknown"}</td>
+                <td>
+                  {run.agent}
+                  <small>{run.model}</small>
+                </td>
+                <td>{formatDuration(run.durationMs)}</td>
+                <td>{formatCurrency(run.costEstimate)}</td>
+                <td>
+                  <Badge tone={getRunStatusTone(run.status)}>
+                    <StatusDot tone={getRunStatusTone(run.status)} />
+                    {getRunStatusLabel(run.status)}
+                  </Badge>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </Panel>
+  );
 }
