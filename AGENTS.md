@@ -1,6 +1,6 @@
 # Agent Workflow
 
-This repository uses `biome` as the authoritative formatter and linter.
+This repository uses `biome` as the authoritative formatter and linter, and `tsc --noEmit` as the authoritative TypeScript correctness check.
 
 ## Shell command rule
 
@@ -10,6 +10,7 @@ Examples:
 
 - `rtk pnpm run biome:check`
 - `rtk pnpm run biome:write`
+- `rtk pnpm run typecheck`
 - `rtk pnpm test`
 
 ## Required validation loop
@@ -19,9 +20,10 @@ Before finishing any code change:
 1. Run `rtk pnpm run biome:check`.
 2. If `biome` reports errors or formatting changes, apply `rtk pnpm run biome:write` or make the smallest correct manual fix.
 3. Re-run `rtk pnpm run biome:check`.
-4. Do not consider the task finished while `biome` is failing.
+4. Run `rtk pnpm run typecheck`.
+5. Do not consider the task finished while `biome` or `tsc --noEmit` is failing.
 
-Treat `biome` output as authoritative over stylistic preference.
+Treat `biome` output as authoritative over stylistic preference, and treat `tsc --noEmit` as authoritative over TypeScript type assumptions.
 
 ## React and TSX rules
 
@@ -35,6 +37,7 @@ When editing React or TSX files:
 ## Local verification targets
 
 - `rtk pnpm run biome:check`
+- `rtk pnpm run typecheck`
 - `rtk pnpm run test`
 
-If a task only changes formatting or lint violations, `biome` passing is the minimum completion bar.
+If a task only changes formatting or lint violations, `biome` passing is the minimum completion bar. Otherwise, both `biome` and `tsc --noEmit` must pass before considering the task complete.

@@ -3,3 +3,5 @@ set -eu
 
 echo "Running Biome checks"
 pnpm run biome:check
+echo "Running TypeScript checks"
+pnpm run typecheck
